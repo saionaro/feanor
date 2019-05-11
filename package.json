@@ -1,0 +1,12 @@
+{
+  "name": "feanor",
+  "version": "0.0.1",
+  "description": "The tool for creating modern light static web sites.",
+  "main": "index.js",
+  "repository": "git@github.com:Saionaro/feanor.git",
+  "author": "Saionaro <shibakow@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "hygen": "^4.0.2"
+  }
+}
