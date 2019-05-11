@@ -6,7 +6,5 @@
   "repository": "git@github.com:Saionaro/feanor.git",
   "author": "Saionaro <shibakow@gmail.com>",
   "license": "MIT",
-  "devDependencies": {
-    "hygen": "^4.0.2"
-  }
+  "devDependencies": {}
 }
