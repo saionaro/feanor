@@ -42,11 +42,12 @@ function install(root, deps = []) {
 async function createProject(argv) {
   if (argv.name) {
     await mkdir(argv.name);
-    await mkdir(`${argv.name}/src`);
+
     const projectRoot = path.join(process.cwd(), argv.name);
 
     await init(projectRoot);
     await install(projectRoot, ["eslint"]);
+    await mkdir(`${argv.name}/src`);
   }
 }
 

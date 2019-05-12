@@ -2,9 +2,20 @@
   "name": "feanor",
   "version": "0.0.1",
   "description": "The tool for creating modern light static web sites.",
-  "main": "index.js",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "eslint src"
+  },
   "repository": "git@github.com:Saionaro/feanor.git",
+  "bugs": {
+    "url": "https://github.com/Saionaro/feanor/issues"
+  },
+  "homepage": "https://github.com/Saionaro/feanor",
   "author": "Saionaro <shibakow@gmail.com>",
+  "keywords": [
+    "static",
+    "sites"
+  ],
   "license": "MIT",
   "husky": {
     "hooks": {
@@ -17,7 +28,7 @@
       "git add"
     ],
     "*.{js}": [
-      "eslint --fix",
+      "eslint --fix src",
       "prettier --write",
       "git add"
     ]
