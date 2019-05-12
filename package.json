@@ -30,6 +30,7 @@
     "prettier": "^1.17.0"
   },
   "dependencies": {
+    "cross-spawn": "^6.0.5",
     "yargs": "^13.2.2"
   }
 }
