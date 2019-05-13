@@ -23,11 +23,11 @@
     }
   },
   "lint-staged": {
-    "*.{json,md}": [
+    "src/**/*.{json,md}": [
       "prettier --write",
       "git add"
     ],
-    "*.{js}": [
+    "src/**/*.js": [
       "eslint --fix src",
       "prettier --write",
       "git add"
