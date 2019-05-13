@@ -42,8 +42,8 @@ async function injectGitHooks(root) {
   };
 
   packageJSONCOntent["lint-staged"] = {
-    "*.{json,md}": ["prettier --write", "git add"],
-    "*.{js}": ["eslint --fix src", "prettier --write", "git add"]
+    "src/**/*.{json,md,html,css}": ["prettier --write", "git add"],
+    "src/**/*.{js}": ["eslint --fix src", "prettier --write", "git add"]
   };
 
   await writeFile(packageJSONPath, JSON.stringify(packageJSONCOntent, null, 2));
