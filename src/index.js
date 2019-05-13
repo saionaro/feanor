@@ -63,7 +63,18 @@ async function createProject(argv) {
 
     await init(projectRoot);
     await install(projectRoot, ["eslint"]);
-    await mkdir(`${argv.name}/src`);
+
+    await Promise.all([
+      mkdir(`${argv.name}/dist`),
+      mkdir(`${argv.name}/static`),
+      mkdir(`${argv.name}/src`)
+    ]);
+
+    await Promise.all([
+      mkdir(`${argv.name}/src/images`),
+      mkdir(`${argv.name}/src/fonts`),
+      mkdir(`${argv.name}/src/fragments`)
+    ]);
   }
 }
 
