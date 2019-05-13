@@ -87,6 +87,21 @@ async function createIndex(root, projectName, lang = "en") {
   log("🏗  Created site root");
 }
 /**
+ * Init git repository at the project root
+ * @param {string} root Project root
+ * @returns {Promise<void>}
+ */
+function initGit(root) {
+  return new Promise((resolve, reject) => {
+    const command = "git";
+    const args = ["init", root];
+
+    const process = spawn(command, args, { stdio: "inherit" });
+
+    process.on("close", handleProcessExit(resolve, reject, command, args));
+  });
+}
+/**
  * Init yarn project at the requred root
  * @param {string} root Project root
  * @returns {Promise<void>}
@@ -129,6 +144,9 @@ async function createProject(argv) {
   const getPath = path.join.bind(this, projectRoot);
 
   await init(projectRoot);
+
+  await initGit(projectRoot);
+
   await install(projectRoot, [
     "eslint",
     "eslint-config-prettier",
