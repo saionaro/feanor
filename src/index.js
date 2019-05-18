@@ -28,11 +28,11 @@ function handleProcessExit(resolve, reject, command, args) {
   };
 }
 /**
- * Attach githooks to project
+ * Add some magic to package.json
  * @param {string} root Project root folder
  * @returns {Promise<void>}
  */
-async function injectGitHooks(root) {
+async function modifyPackageFile(root) {
   const packageJSONPath = path.join(root, "package.json");
 
   let packageJSONCOntent = JSON.parse(await readFile(packageJSONPath, "utf-8"));
@@ -45,6 +45,8 @@ async function injectGitHooks(root) {
     "src/**/*.{json,md,html,css}": ["prettier --write", "git add"],
     "src/**/*.{js}": ["eslint --fix src", "prettier --write", "git add"]
   };
+
+  packageJSONCOntent["browserslist"] = ["defaults"];
 
   await writeFile(packageJSONPath, JSON.stringify(packageJSONCOntent, null, 2));
 
@@ -186,7 +188,7 @@ async function createProject(argv) {
     mkdir(getPath("src")),
     injectEslint(projectRoot),
     injectStylelint(projectRoot),
-    injectGitHooks(projectRoot),
+    modifyPackageFile(projectRoot),
     addGitignore(projectRoot)
   ]);
 
