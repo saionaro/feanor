@@ -63,6 +63,18 @@ async function injectEslint(root) {
   log("👮‍ ESLint injected");
 }
 /**
+ * Add js-friendly gitignore file
+ * @param {string} root Project root folder
+ * @returns {Promise<void>}
+ */
+async function addGitignore(root) {
+  const srcStylePath = path.join(__dirname, "templates/gitignore");
+  const dstStylePath = path.join(root, ".gitignore");
+  await copyFile(srcStylePath, dstStylePath);
+
+  log("🙈 Gitignore added");
+}
+/**
  * Creates project index file
  * @param {string} root Project root folder
  * @param {string} projectName Project name
@@ -160,7 +172,8 @@ async function createProject(argv) {
     mkdir(getPath("static")),
     mkdir(getPath("src")),
     injectEslint(projectRoot),
-    injectGitHooks(projectRoot)
+    injectGitHooks(projectRoot),
+    addGitignore(projectRoot)
   ]);
 
   await Promise.all([
