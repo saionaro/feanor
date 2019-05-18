@@ -63,6 +63,18 @@ async function injectEslint(root) {
   log("👮‍ ESLint injected");
 }
 /**
+ * Inject stylelint
+ * @param {string} root Project root folder
+ * @returns {Promise<void>}
+ */
+async function injectStylelint(root) {
+  const srcStylePath = path.join(__dirname, "templates/stylelintrc.json");
+  const dstStylePath = path.join(root, ".stylelintrc.json");
+  await copyFile(srcStylePath, dstStylePath);
+
+  log("👨‍🎨 Stylelint injected");
+}
+/**
  * Add js-friendly gitignore file
  * @param {string} root Project root folder
  * @returns {Promise<void>}
@@ -162,6 +174,7 @@ async function createProject(argv) {
   await install(projectRoot, [
     "eslint",
     "eslint-config-prettier",
+    "stylelint-config-recommended",
     "husky",
     "lint-staged",
     "prettier"
@@ -172,6 +185,7 @@ async function createProject(argv) {
     mkdir(getPath("static")),
     mkdir(getPath("src")),
     injectEslint(projectRoot),
+    injectStylelint(projectRoot),
     injectGitHooks(projectRoot),
     addGitignore(projectRoot)
   ]);
