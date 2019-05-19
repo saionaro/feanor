@@ -146,12 +146,17 @@ function init(root) {
  * Install primary dependencies at project directory
  * @param {string} root Project root
  * @param {string[]} deps Dependencies list
+ * @param {boolean} isDev Install as dev dependencies
  * @returns {Promise<void>}
  */
-function install(root, deps = []) {
+function install(root, deps = [], isDev = false) {
   return new Promise((resolve, reject) => {
     const command = "yarn";
     const args = ["--cwd", root, "add", "--exact", ...deps];
+
+    if (isDev) {
+      args.push("-D");
+    }
 
     const process = spawn(command, args, { stdio: "inherit" });
 
@@ -173,14 +178,18 @@ async function createProject(argv) {
 
   await initGit(projectRoot);
 
-  await install(projectRoot, [
-    "eslint",
-    "eslint-config-prettier",
-    "stylelint-config-recommended",
-    "husky",
-    "lint-staged",
-    "prettier"
-  ]);
+  await install(
+    projectRoot,
+    [
+      "eslint",
+      "eslint-config-prettier",
+      "stylelint-config-recommended",
+      "husky",
+      "lint-staged",
+      "prettier"
+    ],
+    true
+  );
 
   await Promise.all([
     mkdir(getPath("dist")),
