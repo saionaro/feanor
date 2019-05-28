@@ -63,7 +63,7 @@ async function modifyPackageFile(root) {
  */
 async function injectEslint(root) {
   const srcStylePath = path.join(__dirname, "templates/eslintrc.json");
-  const dstStylePath = path.join(root, ".eslintrc.json");
+  const dstStylePath = path.join(root, ".eslintrc");
   await copyFile(srcStylePath, dstStylePath);
 
   log("👮‍ ESLint injected");
@@ -75,10 +75,22 @@ async function injectEslint(root) {
  */
 async function injectStylelint(root) {
   const srcStylePath = path.join(__dirname, "templates/stylelintrc.json");
-  const dstStylePath = path.join(root, ".stylelintrc.json");
+  const dstStylePath = path.join(root, ".stylelintrc");
   await copyFile(srcStylePath, dstStylePath);
 
   log("👨‍🎨 Stylelint injected");
+}
+/**
+ * Inject posthtmlrc file
+ * @param {string} root Project root folder
+ * @returns {Promise<void>}
+ */
+async function injectPosthtml(root) {
+  const srcStylePath = path.join(__dirname, "templates/posthtmlrc.json");
+  const dstStylePath = path.join(root, ".posthtmlrc");
+  await copyFile(srcStylePath, dstStylePath);
+
+  log("📚 Posthtml injected");
 }
 /**
  * Add js-friendly gitignore file
@@ -191,7 +203,9 @@ async function setupProject(argv) {
       "husky",
       "lint-staged",
       "prettier",
-      "parcel"
+      "parcel",
+      "posthtml",
+      "posthtml-modules"
     ],
     true
   );
@@ -202,6 +216,7 @@ async function setupProject(argv) {
     mkdir(getPath("src")),
     injectEslint(projectRoot),
     injectStylelint(projectRoot),
+    injectPosthtml(projectRoot),
     modifyPackageFile(projectRoot),
     addGitignore(projectRoot)
   ]);
