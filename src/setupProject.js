@@ -47,6 +47,11 @@ async function modifyPackageFile(root) {
 
   packageJSONCOntent["browserslist"] = ["defaults"];
 
+  packageJSONCOntent["scripts"] = {
+    build: "parcel build src/index.html",
+    dev: "parcel src/index.html"
+  };
+
   await writeFile(packageJSONPath, JSON.stringify(packageJSONCOntent, null, 2));
 
   log("🧟‍  Precommit hooks added");
@@ -185,7 +190,8 @@ async function setupProject(argv) {
       "stylelint-config-recommended",
       "husky",
       "lint-staged",
-      "prettier"
+      "prettier",
+      "parcel"
     ],
     true
   );

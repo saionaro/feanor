@@ -59,3 +59,9 @@ typings/
 
 # next.js build output
 .next
+
+# Cache directory
+.cache
+
+# Dist directory
+dist
