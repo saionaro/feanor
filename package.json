@@ -46,7 +46,10 @@
   },
   "dependencies": {
     "cross-spawn": "^6.0.5",
+    "find-free-port": "^2.0.0",
     "mustache": "^3.0.1",
+    "nanodelay": "^0.1.4",
+    "opener": "^1.5.1",
     "yargs": "^13.2.2"
   }
 }

@@ -3,12 +3,18 @@ const path = require("path");
 const fs = require("fs");
 const util = require("util");
 const Mustache = require("mustache");
+const opener = require("opener");
+const fp = require("find-free-port");
+const delay = require("nanodelay");
+
 const log = require("./log.js");
 
 const mkdir = util.promisify(fs.mkdir);
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
 const copyFile = util.promisify(fs.copyFile);
+
+const BASE_PORT = 3000;
 /**
  * Callback generator for process exit callbacks.
  * @param {function} resolve Promise resolve callback
@@ -236,7 +242,20 @@ async function setupProject(argv) {
     writeFile(getPath("src", "fragments", keepfile), "")
   ]);
 
-  log("🚀 We are ready to launch!");
+  log("🚀 We are ready to launch...");
+
+  const ports = await fp(BASE_PORT);
+
+  if (ports.length) {
+    const port = ports[0];
+    const args = ["--cwd", projectRoot, "dev", "--port", port];
+
+    spawn("yarn", args, { stdio: "inherit" });
+
+    await delay(2500);
+
+    opener(`http://localhost:${port}`);
+  }
 }
 
 module.exports = setupProject;
