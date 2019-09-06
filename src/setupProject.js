@@ -42,15 +42,6 @@ async function modifyPackageFile(root) {
 
   let packageJSONCOntent = JSON.parse(await readFile(packageJSONPath, "utf-8"));
 
-  packageJSONCOntent["husky"] = {
-    hooks: { "pre-commit": "lint-staged" }
-  };
-
-  packageJSONCOntent["lint-staged"] = {
-    "src/**/*.{json,md,html,css}": ["prettier --write", "git add"],
-    "src/**/*.{js}": ["eslint --fix src", "prettier --write", "git add"]
-  };
-
   packageJSONCOntent["browserslist"] = ["defaults"];
 
   packageJSONCOntent["scripts"] = {
@@ -85,6 +76,18 @@ async function injectStylelint(root) {
   await copyFile(srcStylePath, dstStylePath);
 
   log("👨‍🎨 Stylelint injected");
+}
+/**
+ * Inject lefthook
+ * @param {string} root Project root folder
+ * @returns {Promise<void>}
+ */
+async function injectLefthook(root) {
+  const srcStylePath = path.join(__dirname, "templates/lefthook.yml");
+  const dstStylePath = path.join(root, "lefthook.yml");
+  await copyFile(srcStylePath, dstStylePath);
+
+  log("🥊 Lefthook injected");
 }
 /**
  * Inject posthtmlrc file
@@ -206,8 +209,7 @@ async function setupProject(argv) {
       "eslint",
       "eslint-config-prettier",
       "stylelint-config-recommended",
-      "husky",
-      "lint-staged",
+      "@arkweid/lefthook",
       "prettier",
       "parcel",
       "posthtml",
@@ -223,6 +225,7 @@ async function setupProject(argv) {
     injectEslint(projectRoot),
     injectStylelint(projectRoot),
     injectPosthtml(projectRoot),
+    injectLefthook(projectRoot),
     modifyPackageFile(projectRoot),
     addGitignore(projectRoot)
   ]);
