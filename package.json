@@ -7,7 +7,7 @@
     "feanor": "./bin/feanor.js"
   },
   "scripts": {
-    "lint": "--ext .js . src",
+    "lint": "eslint --ext .js . src",
     "publish:patch": "npm version patch && git push --follow-tags && npm publish"
   },
   "repository": "git@github.com:Saionaro/feanor.git",
