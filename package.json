@@ -7,7 +7,7 @@
     "feanor": "./bin/feanor.js"
   },
   "scripts": {
-    "lint": "eslint src",
+    "lint": "--ext .js . src",
     "publish:patch": "npm version patch && git push --follow-tags && npm publish"
   },
   "repository": "git@github.com:Saionaro/feanor.git",
@@ -21,27 +21,10 @@
     "sites"
   ],
   "license": "MIT",
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
-  "lint-staged": {
-    "src/**/*.{json,md}": [
-      "prettier --write",
-      "git add"
-    ],
-    "src/**/*.js": [
-      "eslint --fix src",
-      "prettier --write",
-      "git add"
-    ]
-  },
   "devDependencies": {
+    "@arkweid/lefthook": "^0.6.3",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.2.0",
-    "husky": "^2.2.0",
-    "lint-staged": "^8.1.6",
     "prettier": "^1.17.0"
   },
   "dependencies": {
