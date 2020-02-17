@@ -61,6 +61,7 @@ async function modifyPackageFile(root) {
 async function injectEslint(root) {
   const srcStylePath = path.join(__dirname, "templates/eslintrc.json");
   const dstStylePath = path.join(root, ".eslintrc");
+
   await copyFile(srcStylePath, dstStylePath);
 
   log("👮‍ ESLint injected");
@@ -73,6 +74,7 @@ async function injectEslint(root) {
 async function injectStylelint(root) {
   const srcStylePath = path.join(__dirname, "templates/stylelintrc.json");
   const dstStylePath = path.join(root, ".stylelintrc");
+
   await copyFile(srcStylePath, dstStylePath);
 
   log("👨‍🎨 Stylelint injected");
@@ -85,6 +87,7 @@ async function injectStylelint(root) {
 async function injectLefthook(root) {
   const srcStylePath = path.join(__dirname, "templates/lefthook.yml");
   const dstStylePath = path.join(root, "lefthook.yml");
+
   await copyFile(srcStylePath, dstStylePath);
 
   log("🥊 Lefthook injected");
@@ -97,6 +100,7 @@ async function injectLefthook(root) {
 async function injectPosthtml(root) {
   const srcStylePath = path.join(__dirname, "templates/posthtmlrc.json");
   const dstStylePath = path.join(root, ".posthtmlrc");
+
   await copyFile(srcStylePath, dstStylePath);
 
   log("📚 Posthtml injected");
@@ -109,6 +113,7 @@ async function injectPosthtml(root) {
 async function addGitignore(root) {
   const srcStylePath = path.join(__dirname, "templates/gitignore");
   const dstStylePath = path.join(root, ".gitignore");
+
   await copyFile(srcStylePath, dstStylePath);
 
   log("🙈 Gitignore added");
@@ -129,10 +134,12 @@ async function createIndex(root, projectName, lang = "en") {
     lang
   });
   const destinationPath = path.join(root, "src", "index.html");
+
   await writeFile(destinationPath, indexContent);
 
   const srcStylePath = path.join(__dirname, "templates/index.css");
   const dstStylePath = path.join(root, "src", "index.css");
+
   await copyFile(srcStylePath, dstStylePath);
 
   log("🏗  Created site root");
@@ -209,6 +216,7 @@ async function setupProject(argv) {
       "eslint",
       "eslint-config-prettier",
       "stylelint-config-recommended",
+      "stylelint-config-prettier",
       "@arkweid/lefthook",
       "prettier",
       "parcel",
