@@ -46,7 +46,8 @@ async function modifyPackageFile(root) {
 
   packageJSONCOntent["scripts"] = {
     build: "parcel build src/index.html",
-    dev: "parcel src/index.html"
+    dev: "parcel src/index.html",
+    lint: "eslint src/**/*.js --no-error-on-unmatched-pattern"
   };
 
   await writeFile(packageJSONPath, JSON.stringify(packageJSONCOntent, null, 2));
