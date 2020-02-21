@@ -119,6 +119,22 @@ async function addGitignore(root) {
   log("🙈 Gitignore added");
 }
 /**
+ * Creates basic readme file
+ * @param {string} root Project root folder
+ * @param {string} projectName Just a project name
+ * @returns {Promise<void>}
+ */
+async function addReadme(root, projectName) {
+  const srcStylePath = path.join(__dirname, "templates/readme.js");
+  const dstStylePath = path.join(root, "README.md");
+
+  const getReadme = require(srcStylePath);
+
+  await writeFile(dstStylePath, getReadme(projectName));
+
+  log("📖 Readme injected");
+}
+/**
  * Creates project index file
  * @param {string} root Project root folder
  * @param {string} projectName Project name
@@ -201,9 +217,11 @@ function install(root, deps = [], isDev = false) {
  * @returns {Promise<void>}
  */
 async function setupProject(argv) {
-  await mkdir(argv.name);
+  const projectName = argv.name;
 
-  const projectRoot = path.join(process.cwd(), argv.name);
+  await mkdir(projectName);
+
+  const projectRoot = path.join(process.cwd(), projectName);
   const getPath = path.join.bind(this, projectRoot);
 
   await init(projectRoot);
@@ -234,12 +252,13 @@ async function setupProject(argv) {
     injectStylelint(projectRoot),
     injectPosthtml(projectRoot),
     injectLefthook(projectRoot),
+    addReadme(projectRoot, projectName),
     modifyPackageFile(projectRoot),
     addGitignore(projectRoot)
   ]);
 
   await Promise.all([
-    createIndex(projectRoot, argv.name),
+    createIndex(projectRoot, projectName),
     mkdir(getPath("src", "images")),
     mkdir(getPath("src", "fonts")),
     mkdir(getPath("src", "fragments"))
