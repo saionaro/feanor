@@ -120,6 +120,19 @@ async function addGitignore(root) {
   log("🙈 Gitignore added");
 }
 /**
+ * Add js-friendly gitignore file
+ * @param {string} root Project root folder
+ * @returns {Promise<void>}
+ */
+async function addPostcssConfig(root) {
+  const srcStylePath = path.join(__dirname, "templates/postcssrc.json");
+  const dstStylePath = path.join(root, ".postcssrc");
+
+  await copyFile(srcStylePath, dstStylePath);
+
+  log("😈 POSTCSS config added");
+}
+/**
  * Creates basic readme file
  * @param {string} root Project root folder
  * @param {string} projectName Just a project name
@@ -239,6 +252,8 @@ async function setupProject(argv) {
       "@arkweid/lefthook",
       "prettier",
       "parcel",
+      "parcel-plugin-clean-dist",
+      "autoprefixer",
       "posthtml",
       "posthtml-modules"
     ],
@@ -253,6 +268,7 @@ async function setupProject(argv) {
     injectStylelint(projectRoot),
     injectPosthtml(projectRoot),
     injectLefthook(projectRoot),
+    addPostcssConfig(projectRoot),
     addReadme(projectRoot, projectName),
     modifyPackageFile(projectRoot),
     addGitignore(projectRoot)
