@@ -14,3 +14,13 @@ Then just create new project with the command:
 Also bizarre (and recommended) way of using Feanor is `npx`. In this case you should not install something globally:
 
 `npx feanor init myProjectName`
+
+You can specify what type of styling engine you prefer to use - plain `css`, `less`, or `sass`:
+
+`npx feanor init myProjectName --less`
+
+`npx feanor init myProjectName --sass`
+
+Or just provide not any options:
+
+`npx feanor init myProjectName`

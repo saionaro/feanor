@@ -15,6 +15,12 @@ const writeFile = util.promisify(fs.writeFile);
 const copyFile = util.promisify(fs.copyFile);
 
 const BASE_PORT = 3000;
+
+const STYLE_ENGINES = {
+  css: { ext: "css", packages: [] },
+  less: { ext: "less", packages: [] },
+  sass: { ext: "scss", packages: ["sass"] }
+};
 /**
  * Callback generator for process exit callbacks.
  * @param {function} resolve Promise resolve callback
@@ -45,8 +51,8 @@ async function modifyPackageFile(root) {
   packageJSONCOntent["browserslist"] = ["defaults"];
 
   packageJSONCOntent["scripts"] = {
-    build: "parcel build src/index.html",
-    dev: "parcel src/index.html",
+    build: "parcel build src/*.html",
+    dev: "parcel src/*.html",
     lint: "eslint src/**/*.js --no-error-on-unmatched-pattern"
   };
 
@@ -150,25 +156,35 @@ async function addReadme(root, projectName) {
 }
 /**
  * Creates project index file
- * @param {string} root Project root folder
- * @param {string} projectName Project name
- * @param {string} lang Target language
+ * @param {object} params Params object
+ * @param {string} params.projectRoot Project root folder
+ * @param {string} params.projectName Project name
+ * @param {object} params.styleEngine Styling engine
+ * @param {string} params.styleEngine.ext Styling engine file extention
+ * @param {string} params.lang Target language
  * @returns {Promise<void>}
  */
-async function createIndex(root, projectName, lang = "en") {
+async function createIndex({
+  projectRoot,
+  projectName,
+  styleEngine,
+  lang = "en"
+}) {
   const templatePath = path.join(__dirname, "templates/index.mustache");
   const template = await readFile(templatePath, "utf-8");
+  const styleExt = styleEngine.ext;
 
   const indexContent = Mustache.render(template, {
     projectName,
+    styleExt,
     lang
   });
-  const destinationPath = path.join(root, "src", "index.html");
+  const destinationPath = path.join(projectRoot, "src", "index.html");
 
   await writeFile(destinationPath, indexContent);
 
   const srcStylePath = path.join(__dirname, "templates/index.css");
-  const dstStylePath = path.join(root, "src", "index.css");
+  const dstStylePath = path.join(projectRoot, "src", `index.${styleExt}`);
 
   await copyFile(srcStylePath, dstStylePath);
 
@@ -227,11 +243,23 @@ function install(root, deps = [], isDev = false) {
 }
 /**
  * Create new project directory and setup project
- * @param {object} argv Project creation arguments. Contains project name at least
+ * @param {object} argv Project creation arguments.
+ * @param {string} argv.name Project name
+ * @param {boolean} argv.less Using less in project
+ * @param {boolean} argv.sass Using sass in project
  * @returns {Promise<void>}
  */
 async function setupProject(argv) {
   const projectName = argv.name;
+  let styleEngine;
+
+  if (argv.less) {
+    styleEngine = STYLE_ENGINES.less;
+  } else if (argv.sass) {
+    styleEngine = STYLE_ENGINES.sass;
+  } else {
+    styleEngine = STYLE_ENGINES.css;
+  }
 
   await mkdir(projectName);
 
@@ -255,7 +283,8 @@ async function setupProject(argv) {
       "parcel-plugin-clean-dist",
       "autoprefixer",
       "posthtml",
-      "posthtml-modules"
+      "posthtml-modules",
+      ...styleEngine.packages
     ],
     true
   );
@@ -275,7 +304,7 @@ async function setupProject(argv) {
   ]);
 
   await Promise.all([
-    createIndex(projectRoot, projectName),
+    createIndex({ projectRoot, projectName, styleEngine }),
     mkdir(getPath("src", "images")),
     mkdir(getPath("src", "fonts")),
     mkdir(getPath("src", "fragments"))
