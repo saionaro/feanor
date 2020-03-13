@@ -8,7 +8,7 @@
   },
   "scripts": {
     "lint": "eslint --ext .js . src",
-    "publish:patch": "npm version patch && git push --follow-tags && npm publish"
+    "release": "semantic-release"
   },
   "repository": "git@github.com:Saionaro/feanor.git",
   "bugs": {
@@ -23,9 +23,11 @@
   "license": "MIT",
   "devDependencies": {
     "@arkweid/lefthook": "^0.6.3",
+    "@semantic-release/git": "^9.0.0",
     "eslint": "^5.16.0",
     "eslint-config-prettier": "^4.2.0",
-    "prettier": "^1.17.0"
+    "prettier": "^1.17.0",
+    "semantic-release": "^17.0.4"
   },
   "dependencies": {
     "cross-spawn": "^6.0.5",
