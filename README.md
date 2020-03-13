@@ -1,4 +1,4 @@
-# Feanor [![Build Status](https://travis-ci.org/Saionaro/feanor.svg?branch=master)](https://travis-ci.org/Saionaro/feanor)
+# Feanor [![Build Status](https://travis-ci.org/Saionaro/feanor.svg?branch=master)](https://travis-ci.org/Saionaro/feanor) [![npm version](https://badge.fury.io/js/feanor.svg)](https://badge.fury.io/js/feanor)
 
 The tool for creating modern static web sites.
 
