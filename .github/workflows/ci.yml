@@ -15,7 +15,7 @@ jobs:
           cache-name: cache-node-modules
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
@@ -27,10 +27,10 @@ jobs:
           node-version: "12.x"
 
       - name: Install deps
-        run: yarn install
+        run: npm ci
 
       - name: Run linters
-        run: yarn run lint
+        run: npm run lint
 
   release:
     needs: checking
@@ -46,7 +46,7 @@ jobs:
           cache-name: cache-node-modules
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/yarn.lock') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-build-${{ env.cache-name }}-
             ${{ runner.os }}-build-
@@ -59,13 +59,13 @@ jobs:
           node-version: "12.x"
 
       - name: Install deps
-        run: yarn install
+        run: npm ci
 
       - name: Disable Lefthook
         run: echo "::set-env name=LEFTHOOK::0"
 
       - name: Release
-        run: yarn run release
+        run: npm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
