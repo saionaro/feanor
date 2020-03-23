@@ -5,7 +5,7 @@ const util = require("util");
 const Mustache = require("mustache");
 const opener = require("opener");
 const fp = require("find-free-port");
-const delay = require("nanodelay");
+const { delay } = require("nanodelay");
 
 const log = require("./log.js");
 
@@ -19,7 +19,7 @@ const BASE_PORT = 3000;
 const STYLE_ENGINES = {
   css: { ext: "css", packages: [] },
   less: { ext: "less", packages: [] },
-  sass: { ext: "scss", packages: ["sass"] }
+  sass: { ext: "scss", packages: ["sass"] },
 };
 /**
  * Callback generator for process exit callbacks.
@@ -29,10 +29,10 @@ const STYLE_ENGINES = {
  * @param {string[]} args Command args invoked
  */
 function handleProcessExit(resolve, reject, command, args) {
-  return code => {
+  return (code) => {
     if (code !== 0) {
       return reject({
-        command: `${command} ${args.join(" ")}`
+        command: `${command} ${args.join(" ")}`,
       });
     }
     resolve();
@@ -53,7 +53,7 @@ async function modifyPackageFile(root) {
   packageJSONCOntent["scripts"] = {
     build: "parcel build src/*.html",
     dev: "parcel src/*.html",
-    lint: "eslint src/**/*.js --no-error-on-unmatched-pattern"
+    lint: "eslint src/**/*.js --no-error-on-unmatched-pattern",
   };
 
   await writeFile(packageJSONPath, JSON.stringify(packageJSONCOntent, null, 2));
@@ -168,7 +168,7 @@ async function createIndex({
   projectRoot,
   projectName,
   styleEngine,
-  lang = "en"
+  lang = "en",
 }) {
   const templatePath = path.join(__dirname, "templates/index.mustache");
   const template = await readFile(templatePath, "utf-8");
@@ -177,7 +177,7 @@ async function createIndex({
   const indexContent = Mustache.render(template, {
     projectName,
     styleExt,
-    lang
+    lang,
   });
   const destinationPath = path.join(projectRoot, "src", "index.html");
 
@@ -284,14 +284,13 @@ async function setupProject(argv) {
       "autoprefixer",
       "posthtml",
       "posthtml-modules",
-      ...styleEngine.packages
+      ...styleEngine.packages,
     ],
     true
   );
 
   await Promise.all([
     mkdir(getPath("dist")),
-    mkdir(getPath("static")),
     mkdir(getPath("src")),
     injectEslint(projectRoot),
     injectStylelint(projectRoot),
@@ -300,14 +299,13 @@ async function setupProject(argv) {
     addPostcssConfig(projectRoot),
     addReadme(projectRoot, projectName),
     modifyPackageFile(projectRoot),
-    addGitignore(projectRoot)
+    addGitignore(projectRoot),
   ]);
 
   await Promise.all([
     createIndex({ projectRoot, projectName, styleEngine }),
     mkdir(getPath("src", "images")),
     mkdir(getPath("src", "fonts")),
-    mkdir(getPath("src", "fragments"))
   ]);
 
   const keepfile = ".gitkeep";
@@ -315,7 +313,6 @@ async function setupProject(argv) {
   await Promise.all([
     writeFile(getPath("src", "images", keepfile), ""),
     writeFile(getPath("src", "fonts", keepfile), ""),
-    writeFile(getPath("src", "fragments", keepfile), "")
   ]);
 
   log("🚀 We are ready to launch...");
