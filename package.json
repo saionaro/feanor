@@ -22,19 +22,19 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@arkweid/lefthook": "^0.6.3",
+    "@arkweid/lefthook": "^0.7.1",
     "@semantic-release/git": "^9.0.0",
-    "eslint": "^5.16.0",
-    "eslint-config-prettier": "^4.2.0",
-    "prettier": "^1.17.0",
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.1",
+    "prettier": "^2.0.1",
     "semantic-release": "^17.0.4"
   },
   "dependencies": {
-    "cross-spawn": "^6.0.5",
+    "cross-spawn": "^7.0.1",
     "find-free-port": "^2.0.0",
-    "mustache": "^3.0.1",
-    "nanodelay": "^0.1.4",
+    "mustache": "^4.0.1",
+    "nanodelay": "^1.0.1",
     "opener": "^1.5.1",
-    "yargs": "^13.2.2"
+    "yargs": "^15.3.1"
   }
 }
