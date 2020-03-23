@@ -184,7 +184,12 @@ async function createIndex({
   await writeFile(destinationPath, indexContent);
 
   const srcStylePath = path.join(__dirname, "templates/index.css");
-  const dstStylePath = path.join(projectRoot, "src", `index.${styleExt}`);
+  const dstStylePath = path.join(
+    projectRoot,
+    "src",
+    "styles",
+    `index.${styleExt}`
+  );
 
   await copyFile(srcStylePath, dstStylePath);
 
@@ -303,16 +308,19 @@ async function setupProject(argv) {
   ]);
 
   await Promise.all([
-    createIndex({ projectRoot, projectName, styleEngine }),
     mkdir(getPath("src", "images")),
     mkdir(getPath("src", "fonts")),
+    mkdir(getPath("src", "js")),
+    mkdir(getPath("src", "styles")),
   ]);
 
   const keepfile = ".gitkeep";
 
   await Promise.all([
+    createIndex({ projectRoot, projectName, styleEngine }),
     writeFile(getPath("src", "images", keepfile), ""),
     writeFile(getPath("src", "fonts", keepfile), ""),
+    writeFile(getPath("src", "js", keepfile), ""),
   ]);
 
   log("🚀 We are ready to launch...");
