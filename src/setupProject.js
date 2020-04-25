@@ -4,7 +4,6 @@ const fs = require("fs");
 const util = require("util");
 const Mustache = require("mustache");
 const opener = require("opener");
-const fp = require("find-free-port");
 const { delay } = require("nanodelay");
 
 const log = require("./log.js");
@@ -12,9 +11,10 @@ const log = require("./log.js");
 const mkdir = util.promisify(fs.mkdir);
 const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
+const appendFile = util.promisify(fs.appendFile);
 const copyFile = util.promisify(fs.copyFile);
 
-const BASE_PORT = 3000;
+const BASE_PORT = 7823;
 
 const STYLE_ENGINES = {
   css: { ext: "css", packages: [] },
@@ -51,8 +51,8 @@ async function modifyPackageFile(root) {
   packageJSONCOntent["browserslist"] = ["defaults"];
 
   packageJSONCOntent["scripts"] = {
-    build: "parcel build src/*.html",
-    dev: "parcel src/*.html",
+    build: "parcel build src/index.html",
+    dev: `parcel src/index.html --port ${BASE_PORT}`,
     lint: "eslint src/**/*.js --no-error-on-unmatched-pattern",
   };
 
@@ -115,13 +115,22 @@ async function injectPosthtml(root) {
 /**
  * Add js-friendly gitignore file
  * @param {string} root Project root folder
+ * @param {boolean} isYarn Using yarn package manager
  * @returns {Promise<void>}
  */
-async function addGitignore(root) {
+async function addGitignore(root, isYarn) {
   const srcStylePath = path.join(__dirname, "templates/gitignore");
   const dstStylePath = path.join(root, ".gitignore");
 
   await copyFile(srcStylePath, dstStylePath);
+
+  let ignoreLock = "yarn.lock";
+
+  if (isYarn) {
+    ignoreLock = "package-lock.json";
+  }
+
+  await appendFile(dstStylePath, `\n${ignoreLock}\n`);
 
   log("🙈 Gitignore added");
 }
@@ -136,21 +145,32 @@ async function addPostcssConfig(root) {
 
   await copyFile(srcStylePath, dstStylePath);
 
-  log("😈 POSTCSS config added");
+  log("😈 PostCSS config added");
 }
 /**
  * Creates basic readme file
  * @param {string} root Project root folder
+ * @param {boolean} isYarn Using yarn package manager
  * @param {string} projectName Just a project name
  * @returns {Promise<void>}
  */
-async function addReadme(root, projectName) {
-  const srcStylePath = path.join(__dirname, "templates/readme.js");
+async function addReadme(root, isYarn, projectName) {
+  const srcStylePath = path.join(__dirname, "templates/readme.mustache");
   const dstStylePath = path.join(root, "README.md");
 
-  const getReadme = require(srcStylePath);
+  const template = await readFile(srcStylePath, "utf-8");
 
-  await writeFile(dstStylePath, getReadme(projectName));
+  const readmeContent = Mustache.render(template, {
+    projectName,
+    manager: isYarn ? "Yarn" : "NPM",
+    commands: {
+      start: `${isYarn ? "yarn" : "npm run"} dev`,
+      build: `${isYarn ? "yarn" : "npm run"} build`,
+      lint: `${isYarn ? "yarn" : "npm run"} lint`,
+    },
+  });
+
+  await writeFile(dstStylePath, readmeContent);
 
   log("📖 Readme injected");
 }
@@ -227,21 +247,21 @@ function init(root) {
 }
 /**
  * Install primary dependencies at project directory
- * @param {string} root Project root
- * @param {string[]} deps Dependencies list
- * @param {boolean} isDev Install as dev dependencies
+ * @param {object} params
+ * @param {string} params.root Project root
+ * @param {string[]} params.deps Dependencies list
+ * @param {boolean} params.isDev Install as dev dependencies
+ * @param {boolean} params.isYarn Using Yarn package manager
  * @returns {Promise<void>}
  */
-function install(root, deps = [], isDev = false) {
+function install({ root, deps = [], isYarn, isDev = false }) {
   return new Promise((resolve, reject) => {
-    const command = "yarn";
-    const args = ["--cwd", root, "add", "--exact", ...deps];
+    const command = isYarn ? "yarn" : "npm";
+    const args = [isYarn ? "add" : "install", ...deps];
 
-    if (isDev) {
-      args.push("-D");
-    }
+    if (isDev) args.push("-D");
 
-    const process = spawn(command, args, { stdio: "inherit" });
+    const process = spawn(command, args, { stdio: "inherit", cwd: root });
 
     process.on("close", handleProcessExit(resolve, reject, command, args));
   });
@@ -266,6 +286,8 @@ async function setupProject(argv) {
     styleEngine = STYLE_ENGINES.css;
   }
 
+  const isYarn = Boolean(argv.yarn);
+
   await mkdir(projectName);
 
   const projectRoot = path.join(process.cwd(), projectName);
@@ -275,9 +297,9 @@ async function setupProject(argv) {
 
   await initGit(projectRoot);
 
-  await install(
-    projectRoot,
-    [
+  await install({
+    root: projectRoot,
+    deps: [
       "eslint",
       "eslint-config-prettier",
       "stylelint-config-recommended",
@@ -291,8 +313,9 @@ async function setupProject(argv) {
       "posthtml-modules",
       ...styleEngine.packages,
     ],
-    true
-  );
+    isDev: true,
+    isYarn,
+  });
 
   await Promise.all([
     mkdir(getPath("dist")),
@@ -302,9 +325,9 @@ async function setupProject(argv) {
     injectPosthtml(projectRoot),
     injectLefthook(projectRoot),
     addPostcssConfig(projectRoot),
-    addReadme(projectRoot, projectName),
+    addReadme(projectRoot, isYarn, projectName),
     modifyPackageFile(projectRoot),
-    addGitignore(projectRoot),
+    addGitignore(projectRoot, isYarn),
   ]);
 
   await Promise.all([
@@ -325,18 +348,16 @@ async function setupProject(argv) {
 
   log("🚀 We are ready to launch...");
 
-  const ports = await fp(BASE_PORT);
+  const args = ["run", "dev"];
 
-  if (ports.length) {
-    const port = ports[0];
-    const args = ["--cwd", projectRoot, "dev", "--port", port];
+  spawn(isYarn ? "yarn" : "npm", args, {
+    stdio: "inherit",
+    cwd: projectRoot,
+  });
 
-    spawn("yarn", args, { stdio: "inherit" });
+  await delay(2500);
 
-    await delay(2500);
-
-    opener(`http://localhost:${port}`);
-  }
+  opener(`http://localhost:${BASE_PORT}`);
 }
 
 module.exports = setupProject;
