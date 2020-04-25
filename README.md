@@ -15,12 +15,15 @@ Also bizarre (and recommended) way of using Feanor is `npx`. In this case you sh
 
 `npx feanor init myProjectName`
 
-You can specify what type of styling engine you prefer to use - plain `css`, `less`, or `sass`:
+## Options
 
-`npx feanor init myProjectName --less`
+| Name               | Type     | Default value | Description |
+| ------------------ | -------- | ------------- | ----------- |
+| `--less` | `boolean` | false | Use [less](http://lesscss.org) in project.<br>Only one `--less` or `--sass` allowed to be used. |
+| `--sass` | `boolean` | false | Use [scss](https://sass-lang.com) in project.<br>Only one `--less` or `--sass` allowed to be used. |
+| `--npm` | `boolean` | true | Use NPM.<br>Only one `--npm` or `--yarn` allowed to be used. |
+| `--yarn` | `boolean[]` | false | Use [Yarn](https://yarnpkg.com).<br>Only one `--npm` or `--yarn` allowed to be used. |
 
-`npx feanor init myProjectName --sass`
+Example options usage:
 
-Or just provide not any options:
-
-`npx feanor init myProjectName`
+`npx feanor init myProjectName --sass --yarn`
