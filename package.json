@@ -31,7 +31,6 @@
   },
   "dependencies": {
     "cross-spawn": "^7.0.1",
-    "find-free-port": "^2.0.0",
     "mustache": "^4.0.1",
     "nanodelay": "^1.0.1",
     "opener": "^1.5.1",
