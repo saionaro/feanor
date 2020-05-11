@@ -64,6 +64,9 @@ jobs:
       - name: Disable Lefthook
         run: echo "::set-env name=LEFTHOOK::0"
 
+      - name: Run build
+        run: npm run build
+
       - name: Release
         run: npm run release
         env:

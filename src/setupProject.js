@@ -58,7 +58,7 @@ async function modifyPackageFile(root) {
 
   await writeFile(packageJSONPath, JSON.stringify(packageJSONCOntent, null, 2));
 
-  log("🧟‍  Precommit hooks added");
+  log("🧟‍ Precommit hooks added");
 }
 /**
  * Inject eslint
@@ -145,7 +145,7 @@ async function addPostcssConfig(root) {
 
   await copyFile(srcStylePath, dstStylePath);
 
-  log("😈 PostCSS config added");
+  log("✡️  PostCSS config added");
 }
 /**
  * Creates basic readme file
@@ -212,6 +212,11 @@ async function createIndex({
   );
 
   await copyFile(srcStylePath, dstStylePath);
+
+  const srcScriptPath = path.join(__dirname, "templates/index.js");
+  const dstScriptPath = path.join(projectRoot, "src", "js", `index.js`);
+
+  await copyFile(srcScriptPath, dstScriptPath);
 
   log("🏗  Created site root");
 }

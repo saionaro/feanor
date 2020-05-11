@@ -4,3 +4,8 @@
   text-align: center;
   margin-top: 33vh;
 }
+
+.feanor__name {
+  font-weight: bold;
+  font-family: monospace;
+}
