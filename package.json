@@ -8,8 +8,6 @@
   },
   "scripts": {
     "lint": "eslint --ext .js . src",
-    "build": "ncc build bin/feanor.js",
-    "replace-binary": "node ./scripts/replaceBinary.js",
     "release": "semantic-release"
   },
   "repository": "git@github.com:Saionaro/feanor.git",
@@ -30,12 +28,13 @@
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
     "prettier": "^2.0.5",
-    "semantic-release": "^17.0.7",
+    "semantic-release": "^17.0.7"
+  },
+  "dependencies": {
     "cross-spawn": "^7.0.2",
     "mustache": "^4.0.1",
     "nanodelay": "^1.0.1",
     "opener": "^1.5.1",
     "yargs": "^15.3.1"
-  },
-  "dependencies": {}
+  }
 }
