@@ -1,6 +1,6 @@
 {
   "name": "feanor",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "The tool for creating modern light static web sites.",
   "main": "./src/index.js",
   "bin": {
