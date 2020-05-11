@@ -9,6 +9,7 @@
   "scripts": {
     "lint": "eslint --ext .js . src",
     "build": "ncc build bin/feanor.js",
+    "replace-binary": "node ./scripts/replaceBinary.js",
     "release": "semantic-release"
   },
   "repository": "git@github.com:Saionaro/feanor.git",
