@@ -41,9 +41,12 @@ function handleProcessExit(resolve, reject, command, args) {
 /**
  * Add some magic to package.json
  * @param {string} root Project root folder
+ * @param {boolean} isYarn Using yarn package manager
+ * @param {object} styleEngine Styling engine
+ * @param {string} styleEngine.ext Styling engine file extention
  * @returns {Promise<void>}
  */
-async function modifyPackageFile(root) {
+async function modifyPackageFile(root, isYarn, styleEngine) {
   const packageJSONPath = path.join(root, "package.json");
 
   let packageJSONCOntent = JSON.parse(await readFile(packageJSONPath, "utf-8"));
@@ -53,7 +56,11 @@ async function modifyPackageFile(root) {
   packageJSONCOntent["scripts"] = {
     build: "parcel build src/index.html",
     dev: `parcel src/index.html --port ${BASE_PORT}`,
-    lint: "eslint src/**/*.js --no-error-on-unmatched-pattern",
+    lint: isYarn
+      ? "yarn lint:js && yarn lint:css"
+      : "npm run lint:js && npm run lint:css",
+    "lint:js": "eslint src/**/*.js --no-error-on-unmatched-pattern",
+    "lint:css": `stylelint "src/**/*.${styleEngine.ext}"`,
   };
 
   await writeFile(packageJSONPath, JSON.stringify(packageJSONCOntent, null, 2));
@@ -89,13 +96,23 @@ async function injectStylelint(root) {
 /**
  * Inject lefthook
  * @param {string} root Project root folder
+ * @param {boolean} isYarn Using yarn package manager
+ * @param {object} styleEngine Styling engine
+ * @param {string} styleEngine.ext Styling engine file extention
  * @returns {Promise<void>}
  */
-async function injectLefthook(root) {
-  const srcStylePath = path.join(__dirname, "templates/lefthook.yml");
+async function injectLefthook(root, isYarn, styleEngine) {
+  const srcStylePath = path.join(__dirname, "templates/lefthook.mustache");
   const dstStylePath = path.join(root, "lefthook.yml");
 
-  await copyFile(srcStylePath, dstStylePath);
+  const template = await readFile(srcStylePath, "utf-8");
+
+  const hooksContent = Mustache.render(template, {
+    runner: isYarn ? "yarn" : "npm run",
+    stylesExt: styleEngine.ext,
+  });
+
+  await writeFile(dstStylePath, hooksContent);
 
   log("🥊 Lefthook injected");
 }
@@ -307,6 +324,7 @@ async function setupProject(argv) {
     deps: [
       "eslint",
       "eslint-config-prettier",
+      "stylelint",
       "stylelint-config-recommended",
       "stylelint-config-prettier",
       "@arkweid/lefthook",
@@ -328,10 +346,10 @@ async function setupProject(argv) {
     injectEslint(projectRoot),
     injectStylelint(projectRoot),
     injectPosthtml(projectRoot),
-    injectLefthook(projectRoot),
+    injectLefthook(projectRoot, isYarn, styleEngine),
     addPostcssConfig(projectRoot),
     addReadme(projectRoot, isYarn, projectName),
-    modifyPackageFile(projectRoot),
+    modifyPackageFile(projectRoot, isYarn, styleEngine),
     addGitignore(projectRoot, isYarn),
   ]);
 
