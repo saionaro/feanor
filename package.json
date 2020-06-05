@@ -30,9 +30,11 @@
     "semantic-release": "^17.0.7"
   },
   "dependencies": {
+    "axios": "^0.19.2",
     "cross-spawn": "^7.0.2",
     "mustache": "^4.0.1",
     "nanodelay": "^1.0.1",
+    "nanoid": "^3.1.9",
     "opener": "^1.5.1",
     "yargs": "^15.3.1"
   }
