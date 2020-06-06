@@ -122,10 +122,6 @@ const runScript = async (id, projectRoot, isYarn) => {
       }
     }
 
-    if (Object.keys(scripts).length) {
-      //
-    }
-
     if (hasIndex) {
       console.log("Script execution started.");
 
@@ -147,6 +143,8 @@ const runScript = async (id, projectRoot, isYarn) => {
     await rmdir(tmpPath);
 
     console.log("Done");
+
+    return { scripts };
   } catch (e) {
     console.error(e);
     process.exit(1);

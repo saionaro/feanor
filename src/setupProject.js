@@ -9,7 +9,8 @@ const { delay } = require("nanodelay");
 const { install } = require("./deps.js");
 const { handleProcessExit } = require("./process.js");
 const { runScript } = require("./scriptsLoader.js");
-const log = require("./log.js");
+const { log } = require("./log.js");
+const { write, read } = require("./package.js");
 
 const mkdir = util.promisify(fs.mkdir);
 const readFile = util.promisify(fs.readFile);
@@ -26,22 +27,18 @@ const STYLE_ENGINES = {
 };
 /**
  * Add some magic to package.json
- * @param {string} root Project root folder
+ * @param {object} content package.json contents
  * @param {boolean} isYarn Using yarn package manager
  * @param {object} styleEngine Styling engine
  * @param {string} styleEngine.ext Styling engine file extention
- * @returns {Promise<void>}
+ * @returns {object}
  */
-async function modifyPackageFile(root, isYarn, styleEngine) {
-  const packageJSONPath = path.join(root, "package.json");
+function addBasicScripts(content, isYarn, styleEngine) {
+  content.main = "./src/js/index.js";
 
-  let packageJSONCOntent = JSON.parse(await readFile(packageJSONPath, "utf-8"));
+  content.browserslist = ["defaults"];
 
-  packageJSONCOntent.main = "./src/js/index.js";
-
-  packageJSONCOntent.browserslist = ["defaults"];
-
-  packageJSONCOntent.scripts = {
+  content.scripts = {
     build: "parcel build src/index.html",
     dev: `parcel src/index.html --port ${BASE_PORT}`,
     lint: isYarn
@@ -51,9 +48,9 @@ async function modifyPackageFile(root, isYarn, styleEngine) {
     "lint:css": `stylelint "src/**/*.${styleEngine.ext}"`,
   };
 
-  await writeFile(packageJSONPath, JSON.stringify(packageJSONCOntent, null, 2));
+  log("🧟‍ Scripts added");
 
-  log("🧟‍ Precommit hooks added");
+  return content;
 }
 /**
  * Inject eslint
@@ -309,7 +306,12 @@ async function setupProject(argv) {
     isYarn,
   });
 
+  const packageContent = await read(projectRoot);
+
+  addBasicScripts(packageContent, isYarn, styleEngine);
+
   await Promise.all([
+    write(projectRoot, packageContent),
     mkdir(getPath("dist")),
     mkdir(getPath("src")),
     injectEslint(projectRoot),
@@ -318,7 +320,6 @@ async function setupProject(argv) {
     injectLefthook(projectRoot, isYarn, styleEngine),
     addPostcssConfig(projectRoot),
     addReadme(projectRoot, isYarn, projectName),
-    modifyPackageFile(projectRoot, isYarn, styleEngine),
     addGitignore(projectRoot, isYarn),
   ]);
 
@@ -338,10 +339,22 @@ async function setupProject(argv) {
     writeFile(getPath("src", "js", keepfile), ""),
   ]);
 
+  const allScripts = {};
+
   if (argv.scripts && argv.scripts.length) {
     for (const id of argv.scripts) {
-      await runScript(id, projectRoot, isYarn);
+      const { scripts } = await runScript(id, projectRoot, isYarn);
+
+      Object.assign(allScripts, scripts);
     }
+  }
+
+  {
+    const packageContent = await read(projectRoot);
+
+    Object.assign(packageContent.scripts, allScripts);
+
+    await write(projectRoot, packageContent);
   }
 
   log("🚀 We are ready to launch...");
