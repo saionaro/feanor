@@ -4,9 +4,12 @@ const fs = require("fs");
 const { join } = require("path");
 const { promisify } = require("util");
 
-const { install } = require("./deps");
+const { log, err } = require("./log.js");
+const { install } = require("./deps.js");
 
 const writeFile = promisify(fs.writeFile);
+const copyFile = promisify(fs.copyFile);
+const exists = promisify(fs.exists);
 const mkdir = promisify(fs.mkdir);
 const unlink = promisify(fs.unlink);
 const readdir = promisify(fs.readdir);
@@ -14,44 +17,24 @@ const rmdir = promisify(fs.rmdir);
 
 const GIST_API = "https://api.github.com/gists/";
 
-const isSudo = () => {
-  // TODO check windows as well
-  return Boolean(process.getuid && process.getuid() === 0);
-};
-// - scripts.json
-// {
-//   "scriptName": "echo kek",
-// }
-// - deps.json
-// ["dep1:dev", "dep2:dev", "dep3", "dep4"]
-// - index.js
-// interface Index {
-//   run: async () => {}
-// }
 const parseJSON = (data) => {
   try {
     return JSON.parse(data);
   } catch (e) {
-    console.error("Error while parsing data");
+    err("Error while parsing data");
   }
 
   return null;
 };
 
 const runScript = async (id, projectRoot, isYarn) => {
-  if (isSudo()) {
-    console.error("Error: Running Feanor as root is extremely dangerous.");
-    console.error("Please, repeat the command with common access rights.");
-    process.exit(1);
-  }
-
   const url = `${GIST_API}${id}`;
   const suffix = nanoid();
   const tmpName = `tmp-${suffix}`;
   const tmpPath = join(projectRoot, tmpName);
 
   try {
-    console.log("Script contents loading started.");
+    log("Script contents loading started.");
 
     const { data } = await axios.get(url);
 
@@ -61,7 +44,7 @@ const runScript = async (id, projectRoot, isYarn) => {
 
     const deps = [];
     const scripts = {};
-    let hasIndex = false;
+    const filesList = [];
 
     for (const file of files) {
       const fileData = data.files[file];
@@ -82,12 +65,17 @@ const runScript = async (id, projectRoot, isYarn) => {
         continue;
       }
 
-      if (file === "index.js") hasIndex = true;
+      const filePath = join(tmpPath, fileData.filename);
 
-      await writeFile(join(tmpPath, fileData.filename), fileData.content);
+      await writeFile(filePath, fileData.content);
+
+      filesList.push({
+        path: filePath,
+        name: fileData.filename,
+      });
     }
 
-    console.log("Script contents loaded.");
+    log("Script contents loaded.");
 
     if (deps.length) {
       const devDeps = [];
@@ -122,17 +110,34 @@ const runScript = async (id, projectRoot, isYarn) => {
       }
     }
 
-    if (hasIndex) {
-      console.log("Script execution started.");
+    if (filesList.length) {
+      log("Starting copy files.");
 
-      const { run } = require(join(tmpPath, "index.js"));
+      const scriptsPath = join(projectRoot, "scripts");
 
-      await run();
+      for (const { path, name } of filesList) {
+        let targetPath = join(scriptsPath, name);
 
-      console.log("Script execution finished.");
+        if (await exists(targetPath)) {
+          err("Filenames conflict!");
+          err("Adding suffix...");
+
+          const suffix = nanoid(4);
+          const tmpName = `${suffix}-${name}`;
+          targetPath = join(scriptsPath, tmpName);
+
+          err(`Added suffix, at the moment file name is "${tmpName}"`);
+
+          err(`Make sure you'll fix the issue before start script.`);
+        }
+
+        await copyFile(path, targetPath);
+      }
+
+      log("Copy finished.");
     }
 
-    console.log("Cleaning up...");
+    log("Cleaning up...");
 
     const contents = await readdir(tmpPath);
 
@@ -142,7 +147,7 @@ const runScript = async (id, projectRoot, isYarn) => {
 
     await rmdir(tmpPath);
 
-    console.log("Done");
+    log("Done");
 
     return { scripts };
   } catch (e) {

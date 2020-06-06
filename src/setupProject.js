@@ -314,6 +314,7 @@ async function setupProject(argv) {
     write(projectRoot, packageContent),
     mkdir(getPath("dist")),
     mkdir(getPath("src")),
+    mkdir(getPath("scripts")),
     injectEslint(projectRoot),
     injectStylelint(projectRoot),
     injectPosthtml(projectRoot),
@@ -323,14 +324,15 @@ async function setupProject(argv) {
     addGitignore(projectRoot, isYarn),
   ]);
 
+  const keepfile = ".gitkeep";
+
   await Promise.all([
     mkdir(getPath("src", "images")),
     mkdir(getPath("src", "fonts")),
     mkdir(getPath("src", "js")),
     mkdir(getPath("src", "styles")),
+    writeFile(getPath("scripts", keepfile), ""),
   ]);
-
-  const keepfile = ".gitkeep";
 
   await Promise.all([
     createIndex({ projectRoot, projectName, styleEngine }),
