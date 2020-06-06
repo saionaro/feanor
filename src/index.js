@@ -32,6 +32,11 @@ yargs
           type: "boolean",
           describe: "Use NPM package manager",
         })
+        .option("scripts", {
+          describe:
+            "Post init scripts to execute: ids for Github Gist, separated by whitespace",
+        })
+        .array("scripts")
         .check((argv) => {
           if (argv.less && argv.sass) {
             throw new Error(`Choose only one "less" or "sass" to use.`);

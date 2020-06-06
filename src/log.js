@@ -1,7 +1,9 @@
-/**
- * Output anything to stdout
- */
-module.exports = function log(...args) {
-  // eslint-disable-next-line
+function log(...args) {
   console.log(...args);
-};
+}
+
+function err(...args) {
+  console.error(...args);
+}
+
+module.exports = { log, err };

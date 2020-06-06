@@ -6,7 +6,11 @@ const Mustache = require("mustache");
 const opener = require("opener");
 const { delay } = require("nanodelay");
 
-const log = require("./log.js");
+const { install } = require("./deps.js");
+const { handleProcessExit } = require("./process.js");
+const { runScript } = require("./scriptsLoader.js");
+const { log } = require("./log.js");
+const { write, read } = require("./package.js");
 
 const mkdir = util.promisify(fs.mkdir);
 const readFile = util.promisify(fs.readFile);
@@ -22,38 +26,19 @@ const STYLE_ENGINES = {
   sass: { ext: "scss", packages: ["sass"] },
 };
 /**
- * Callback generator for process exit callbacks.
- * @param {function} resolve Promise resolve callback
- * @param {function} reject Promise reject callback
- * @param {string} command Command invoked
- * @param {string[]} args Command args invoked
- */
-function handleProcessExit(resolve, reject, command, args) {
-  return (code) => {
-    if (code !== 0) {
-      return reject({
-        command: `${command} ${args.join(" ")}`,
-      });
-    }
-    resolve();
-  };
-}
-/**
  * Add some magic to package.json
- * @param {string} root Project root folder
+ * @param {object} content package.json contents
  * @param {boolean} isYarn Using yarn package manager
  * @param {object} styleEngine Styling engine
  * @param {string} styleEngine.ext Styling engine file extention
- * @returns {Promise<void>}
+ * @returns {object}
  */
-async function modifyPackageFile(root, isYarn, styleEngine) {
-  const packageJSONPath = path.join(root, "package.json");
+function addBasicScripts(content, isYarn, styleEngine) {
+  content.main = "./src/js/index.js";
 
-  let packageJSONCOntent = JSON.parse(await readFile(packageJSONPath, "utf-8"));
+  content.browserslist = ["defaults"];
 
-  packageJSONCOntent["browserslist"] = ["defaults"];
-
-  packageJSONCOntent["scripts"] = {
+  content.scripts = {
     build: "parcel build src/index.html",
     dev: `parcel src/index.html --port ${BASE_PORT}`,
     lint: isYarn
@@ -63,9 +48,9 @@ async function modifyPackageFile(root, isYarn, styleEngine) {
     "lint:css": `stylelint "src/**/*.${styleEngine.ext}"`,
   };
 
-  await writeFile(packageJSONPath, JSON.stringify(packageJSONCOntent, null, 2));
+  log("🧟‍ Scripts added");
 
-  log("🧟‍ Precommit hooks added");
+  return content;
 }
 /**
  * Inject eslint
@@ -259,29 +244,8 @@ function initGit(root) {
  */
 function init(root) {
   return new Promise((resolve, reject) => {
-    const command = "yarn";
-    const args = ["--cwd", root, "init", "-y"];
-
-    const process = spawn(command, args, { stdio: "inherit" });
-
-    process.on("close", handleProcessExit(resolve, reject, command, args));
-  });
-}
-/**
- * Install primary dependencies at project directory
- * @param {object} params
- * @param {string} params.root Project root
- * @param {string[]} params.deps Dependencies list
- * @param {boolean} params.isDev Install as dev dependencies
- * @param {boolean} params.isYarn Using Yarn package manager
- * @returns {Promise<void>}
- */
-function install({ root, deps = [], isYarn, isDev = false }) {
-  return new Promise((resolve, reject) => {
-    const command = isYarn ? "yarn" : "npm";
-    const args = [isYarn ? "add" : "install", ...deps];
-
-    if (isDev) args.push("-D");
+    const command = "npm";
+    const args = ["init", "-y"];
 
     const process = spawn(command, args, { stdio: "inherit", cwd: root });
 
@@ -294,6 +258,7 @@ function install({ root, deps = [], isYarn, isDev = false }) {
  * @param {string} argv.name Project name
  * @param {boolean} argv.less Using less in project
  * @param {boolean} argv.sass Using sass in project
+ * @param {string[]} argv.scripts Postinstall scripts list
  * @returns {Promise<void>}
  */
 async function setupProject(argv) {
@@ -313,6 +278,7 @@ async function setupProject(argv) {
   await mkdir(projectName);
 
   const projectRoot = path.join(process.cwd(), projectName);
+
   const getPath = path.join.bind(this, projectRoot);
 
   await init(projectRoot);
@@ -340,27 +306,33 @@ async function setupProject(argv) {
     isYarn,
   });
 
+  const packageContent = await read(projectRoot);
+
+  addBasicScripts(packageContent, isYarn, styleEngine);
+
   await Promise.all([
+    write(projectRoot, packageContent),
     mkdir(getPath("dist")),
     mkdir(getPath("src")),
+    mkdir(getPath("scripts")),
     injectEslint(projectRoot),
     injectStylelint(projectRoot),
     injectPosthtml(projectRoot),
     injectLefthook(projectRoot, isYarn, styleEngine),
     addPostcssConfig(projectRoot),
     addReadme(projectRoot, isYarn, projectName),
-    modifyPackageFile(projectRoot, isYarn, styleEngine),
     addGitignore(projectRoot, isYarn),
   ]);
+
+  const keepfile = ".gitkeep";
 
   await Promise.all([
     mkdir(getPath("src", "images")),
     mkdir(getPath("src", "fonts")),
     mkdir(getPath("src", "js")),
     mkdir(getPath("src", "styles")),
+    writeFile(getPath("scripts", keepfile), ""),
   ]);
-
-  const keepfile = ".gitkeep";
 
   await Promise.all([
     createIndex({ projectRoot, projectName, styleEngine }),
@@ -368,6 +340,24 @@ async function setupProject(argv) {
     writeFile(getPath("src", "fonts", keepfile), ""),
     writeFile(getPath("src", "js", keepfile), ""),
   ]);
+
+  const allScripts = {};
+
+  if (argv.scripts && argv.scripts.length) {
+    for (const id of argv.scripts) {
+      const { scripts } = await runScript(id, projectRoot, isYarn);
+
+      Object.assign(allScripts, scripts);
+    }
+  }
+
+  {
+    const packageContent = await read(projectRoot);
+
+    Object.assign(packageContent.scripts, allScripts);
+
+    await write(projectRoot, packageContent);
+  }
 
   log("🚀 We are ready to launch...");
 
