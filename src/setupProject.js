@@ -23,7 +23,7 @@ const BASE_PORT = 7823;
 const STYLE_ENGINES = {
   css: { ext: "css", packages: [] },
   less: { ext: "less", packages: [] },
-  sass: { ext: "scss", packages: ["sass"] },
+  sass: { ext: "scss", packages: ["sass", "stylelint-scss"] },
 };
 /**
  * Add some magic to package.json
@@ -68,13 +68,30 @@ async function injectEslint(root) {
 /**
  * Inject stylelint
  * @param {string} root Project root folder
+ * @param {object} styleEngine Styling engine
+ * @param {string} styleEngine.ext Styling engine file extention
  * @returns {Promise<void>}
  */
-async function injectStylelint(root) {
-  const srcStylePath = path.join(__dirname, "templates/stylelintrc.json");
+async function injectStylelint(root, styleEngine) {
+  const srcStylePath = path.join(__dirname, "templates/stylelintrc.mustache");
   const dstStylePath = path.join(root, ".stylelintrc");
 
-  await copyFile(srcStylePath, dstStylePath);
+  const template = await readFile(srcStylePath, "utf-8");
+
+  let plugins = "";
+  let rules = "";
+
+  if (styleEngine.ext === "scss") {
+    plugins = `,\n  "plugins": ["stylelint-scss"]`;
+    rules = `,\n  "rules": {\n    "at-rule-no-unknown": null,\n    "scss/at-rule-no-unknown": true\n  }`;
+  }
+
+  const stylelintConfig = Mustache.render(template, {
+    plugins,
+    rules,
+  });
+
+  await writeFile(dstStylePath, stylelintConfig);
 
   log("👨‍🎨 Stylelint injected");
 }
@@ -316,7 +333,7 @@ async function setupProject(argv) {
     mkdir(getPath("src")),
     mkdir(getPath("scripts")),
     injectEslint(projectRoot),
-    injectStylelint(projectRoot),
+    injectStylelint(projectRoot, styleEngine),
     injectPosthtml(projectRoot),
     injectLefthook(projectRoot, isYarn, styleEngine),
     addPostcssConfig(projectRoot),
