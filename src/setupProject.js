@@ -20,6 +20,8 @@ const copyFile = util.promisify(fs.copyFile);
 
 const BASE_PORT = 7823;
 
+const IS_TEST = process.env.NODE_ENV === "test";
+
 const STYLE_ENGINES = {
   css: { ext: "css", packages: [] },
   less: { ext: "less", packages: [] },
@@ -279,7 +281,6 @@ function init(root) {
  * @returns {Promise<void>}
  */
 async function setupProject(argv) {
-  const projectName = argv.name;
   let styleEngine;
 
   if (argv.less) {
@@ -290,12 +291,11 @@ async function setupProject(argv) {
     styleEngine = STYLE_ENGINES.css;
   }
 
+  await mkdir(argv.name, { recursive: true });
+
   const isYarn = Boolean(argv.yarn);
-
-  await mkdir(projectName);
-
-  const projectRoot = path.join(process.cwd(), projectName);
-
+  const projectRoot = path.join(process.cwd(), argv.name);
+  const projectName = path.basename(argv.name);
   const getPath = path.join.bind(this, projectRoot);
 
   await init(projectRoot);
@@ -377,6 +377,8 @@ async function setupProject(argv) {
   }
 
   log("🚀 We are ready to launch...");
+
+  if (IS_TEST) return;
 
   const args = ["run", "dev"];
 

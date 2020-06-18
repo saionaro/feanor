@@ -9,18 +9,6 @@ jobs:
       - name: Checkout the repository
         uses: actions/checkout@v1
 
-      - name: Cache node modules
-        uses: actions/cache@v1
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: ~/.npm
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-
       - name: Setup Node.JS
         uses: actions/setup-node@v1
         with:
@@ -31,6 +19,9 @@ jobs:
 
       - name: Run linters
         run: npm run lint
+
+      - name: Run tests
+        run: npm run test
 
   release:
     needs: checking
