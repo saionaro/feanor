@@ -5,6 +5,7 @@ const { promisify } = require("util");
 const exists = promisify(fs.exists);
 
 const PROJECT_DIR = "tests/temp/npm-css";
+const STYLE_PATH = join(PROJECT_DIR, "src", "styles", "index.css");
 
 jest.setTimeout(1000 * 60 * 2); // 2 mins
 
@@ -15,9 +16,7 @@ beforeAll(async (done) => {
 
 describe("npm-css", () => {
   test("should have css file", async () => {
-    const stylePath = join(PROJECT_DIR, "src", "styles", "index.css");
-
-    const result = await exists(stylePath);
+    const result = await exists(STYLE_PATH);
 
     expect(result).toBeTruthy();
   });
