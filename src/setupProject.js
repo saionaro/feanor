@@ -314,7 +314,7 @@ async function setupProject(argv) {
       "prettier",
       "parcel",
       "parcel-plugin-clean-dist",
-      "autoprefixer",
+      "autoprefixer@9.8.6",
       "posthtml",
       "posthtml-modules",
       ...styleEngine.packages,
