@@ -9,7 +9,7 @@
   "scripts": {
     "lint": "eslint --ext .js . src",
     "test": "jest",
-    "prettier": "prettier",
+    "prettier": "prettier --write",
     "release": "semantic-release"
   },
   "repository": "git@github.com:Saionaro/feanor.git",
