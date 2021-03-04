@@ -312,7 +312,7 @@ async function setupProject(argv) {
       "stylelint-config-prettier",
       "@arkweid/lefthook",
       "prettier",
-      "parcel",
+      "parcel@1.12.3",
       "parcel-plugin-clean-dist",
       "autoprefixer@9.8.6",
       "posthtml",
