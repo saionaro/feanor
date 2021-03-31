@@ -36,13 +36,14 @@ const STYLE_ENGINES = {
  * @returns {object}
  */
 function addBasicScripts(content, isYarn, styleEngine) {
-  content.main = "./src/js/index.js";
+  content.main = "./dist/index.html";
 
   content.browserslist = ["defaults"];
 
   content.scripts = {
-    build: "parcel build src/index.html",
-    dev: `parcel src/index.html --port ${BASE_PORT}`,
+    build:
+      'del-cli "./dist/*" && parcel build "src/**/*.html" --no-source-maps',
+    dev: `parcel serve "src/**/*.html" --port ${BASE_PORT}`,
     lint: isYarn
       ? "yarn lint:js && yarn lint:css"
       : "npm run lint:js && npm run lint:css",
@@ -140,7 +141,7 @@ async function injectPosthtml(root) {
  * @returns {Promise<void>}
  */
 async function addGitignore(root, isYarn) {
-  const srcStylePath = path.join(__dirname, "templates/gitignore");
+  const srcStylePath = path.join(__dirname, "templates/gitignore.txt");
   const dstStylePath = path.join(root, ".gitignore");
 
   await copyFile(srcStylePath, dstStylePath);
@@ -151,7 +152,10 @@ async function addGitignore(root, isYarn) {
     ignoreLock = "package-lock.json";
   }
 
-  await appendFile(dstStylePath, `\n${ignoreLock}\n`);
+  await appendFile(
+    dstStylePath,
+    `\n# Alien Package Manager Lockfile\n${ignoreLock}\n`
+  );
 
   log("🙈 Gitignore added");
 }
@@ -167,6 +171,19 @@ async function addPostcssConfig(root) {
   await copyFile(srcStylePath, dstStylePath);
 
   log("✡️  PostCSS config added");
+}
+/**
+ * Add parcel configuration file
+ * @param {string} root Project root folder
+ * @returns {Promise<void>}
+ */
+async function addParcelConfig(root) {
+  const srcStylePath = path.join(__dirname, "templates/parcelrc.json");
+  const dstStylePath = path.join(root, ".parcelrc");
+
+  await copyFile(srcStylePath, dstStylePath);
+
+  log("📦 Parcel 2.0 config added");
 }
 /**
  * Creates basic readme file
@@ -312,11 +329,10 @@ async function setupProject(argv) {
       "stylelint-config-prettier",
       "@arkweid/lefthook",
       "prettier",
-      "parcel@1.12.3",
-      "parcel-plugin-clean-dist",
-      "autoprefixer@9.8.6",
+      "parcel@next",
+      "autoprefixer",
       "posthtml",
-      "posthtml-modules",
+      "del-cli",
       ...styleEngine.packages,
     ],
     isDev: true,
@@ -337,6 +353,7 @@ async function setupProject(argv) {
     injectPosthtml(projectRoot),
     injectLefthook(projectRoot, isYarn, styleEngine),
     addPostcssConfig(projectRoot),
+    addParcelConfig(projectRoot),
     addReadme(projectRoot, isYarn, projectName),
     addGitignore(projectRoot, isYarn),
   ]);

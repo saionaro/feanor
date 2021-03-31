@@ -69,3 +69,6 @@ dist
 
 # Macos directory meta
 .DS_Store
+
+# Parcel Cache Directory
+.parcel-cache
