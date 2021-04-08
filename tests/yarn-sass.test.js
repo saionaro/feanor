@@ -8,7 +8,7 @@ const appendFile = promisify(fs.appendFile);
 const PROJECT_DIR = "tests/temp/yarn-sass";
 const STYLE_PATH = join(PROJECT_DIR, "src", "styles", "index.scss");
 
-jest.setTimeout(1000 * 60 * 2); // 2 mins
+jest.setTimeout(1000 * 60 * 3); // 3 mins
 
 beforeAll(async (done) => {
   await global.cli(["init", PROJECT_DIR, "--sass", "--yarn"], ".");
@@ -63,6 +63,12 @@ describe("yarn-sass", () => {
       ["run", "lint:css"],
       PROJECT_DIR
     );
+
+    expect(lintResult.code).toBe(0);
+  });
+
+  test("build should work", async () => {
+    let lintResult = await global.runCmd("yarn", ["run", "build"], PROJECT_DIR);
 
     expect(lintResult.code).toBe(0);
   });

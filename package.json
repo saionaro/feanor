@@ -8,7 +8,7 @@
   },
   "scripts": {
     "lint": "eslint --ext .js . src",
-    "test": "jest",
+    "test": "jest --verbose",
     "prettier": "prettier --write",
     "release": "semantic-release"
   },

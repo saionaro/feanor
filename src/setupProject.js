@@ -25,7 +25,7 @@ const IS_TEST = process.env.NODE_ENV === "test";
 const STYLE_ENGINES = {
   css: { ext: "css", packages: [] },
   less: { ext: "less", packages: [] },
-  sass: { ext: "scss", packages: ["sass", "stylelint-scss"] },
+  sass: { ext: "scss", packages: ["stylelint-scss"] },
 };
 /**
  * Add some magic to package.json
@@ -36,7 +36,7 @@ const STYLE_ENGINES = {
  * @returns {object}
  */
 function addBasicScripts(content, isYarn, styleEngine) {
-  content.main = "./dist/index.html";
+  delete content.main;
 
   content.browserslist = ["defaults"];
 
@@ -330,6 +330,7 @@ async function setupProject(argv) {
       "@arkweid/lefthook",
       "prettier",
       "parcel@next",
+      "postcss@8.2.9",
       "autoprefixer",
       "posthtml",
       "del-cli",
