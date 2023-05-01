@@ -34,7 +34,7 @@
     "semantic-release": "^17.4.1"
   },
   "dependencies": {
-    "axios": "^0.19.2",
+    "axios": "^0.21.2",
     "cross-spawn": "^7.0.3",
     "mustache": "^4.1.0",
     "nanodelay": "^1.0.6",
